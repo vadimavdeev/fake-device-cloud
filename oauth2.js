@@ -176,17 +176,11 @@ exports.authorization = [
       //          been warned.
       return done(null, client, redirectURI);
     });
-  }, function (client, user, done) {
-    // Check if grant request qualifies for immediate approval
-    if (user.has_token(client)) {
-      // Auto-approve
-      return done(null, true);
-    }
-    if (client.isTrusted()) {
-      // Auto-approve
-      return done(null, true);
-    }
-    // Otherwise ask user
+  },
+  function (client, user, done) {
+    // TODO Check if grant request qualifies for immediate approval
+
+    // Ask user
     done(null, false);
   }),
   function(req, res){
