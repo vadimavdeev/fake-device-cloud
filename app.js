@@ -9,6 +9,7 @@ var user = require('./routes/user');
 var client = require('./routes/client');
 var util = require('util');
 
+var PORT = process.env.PORT || 3000;
   
 var app = express();
 app.set('view engine', 'ejs');
@@ -38,4 +39,4 @@ app.post('/oauth/token', oauth2.token);
 app.get('/api/userinfo', user.info);
 app.get('/api/clientinfo', client.info);
 
-app.listen(3000);
+app.listen(PORT);
