@@ -3,7 +3,6 @@ var passport = require('passport');
 var login = require('connect-ensure-login');
 var db = require('./db');
 var utils = require('./utils');
-var debug = require('debug')('fake_device_cloud');
 
 // create OAuth 2.0 server
 var server = oauth2orize.createServer();
@@ -211,18 +210,6 @@ exports.decision = [
 
 exports.token = [
   passport.authenticate(['basic', 'oauth2-client-password'], { session: false }),
-  logRequest,
   server.token(),
-  logResponse,
   server.errorHandler()
 ];
-
-function logRequest(req, res, next) {
-    debug('REQUEST', req);
-    next();
-}
-
-function logResponse(req, res, next) {
-    debug('RESPONSE', res);
-    next();
-}
