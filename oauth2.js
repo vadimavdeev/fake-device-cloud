@@ -218,11 +218,11 @@ exports.token = [
 ];
 
 function logRequest(req, res, next) {
-    debug('REQUEST', JSON.stringify(req, null, 2));
+    debug('REQUEST', req);
     next();
 }
 
 function logResponse(req, res, next) {
-    debug('RESPONSE', JSON.stringify(res, null, 2));
+    debug('RESPONSE', res);
     next();
 }
