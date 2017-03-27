@@ -12,7 +12,7 @@ exports.obtainToken = function (grant, done) {
             return done(err);
         }
 
-        done(null, body.token);
+        done(null, body.access_token);
     });
 };
 
@@ -26,6 +26,6 @@ exports.refreshToken = function (grant, done) {
             return done(err);
         }
 
-        done(null, body.token);
+        done(null, body.access_token);
     });
 };
