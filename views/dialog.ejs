@@ -1,11 +1,19 @@
-<p>Hi <%= user.name %>!</p>
-<p><b><%= client.name %></b> is requesting access to your account.</p>
-<p>Do you approve?</p>
-
-<form action="/dialog/authorize/decision" method="post">
-  <input name="transaction_id" type="hidden" value="<%= transactionID %>">
-  <div>
-  <input type="submit" value="Allow" id="allow">
-  <input type="submit" value="Deny" name="cancel" id="deny">
-  </div>
-</form>
+<section class="login">
+  <h1 class="headline">Alexa Account Linking</h1>
+  <p class="tagline">
+    <b><%= client.name %></b> is requesting access to your account.
+    To link your Helia account with Amazon Alexa please
+    <a href="helia://account-linking" target="_blank">open the Helia app</a>
+    on your device. It will generate a code for you which you'll need to paste
+    in the field below
+  </p>
+  <form id="grant-code-form" action="/dialog/authorize/decision" method="post">
+    <input name="transaction_id" type="hidden" value="<%= transactionID %>">
+    <div class="input-group">
+      <input id="grant-code" type="text" name="code" placeholder="Access Grant Code" />
+    </div>
+    <div class="input-group">
+      <input type="submit" id="allow" value="Allow" class="button button-primary" />
+    </div>
+  </form>
+</section>

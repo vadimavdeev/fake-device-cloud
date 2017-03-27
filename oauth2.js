@@ -3,11 +3,12 @@ var passport = require('passport');
 var login = require('connect-ensure-login');
 var db = require('./db');
 var utils = require('./utils');
+var virgilAuth = require('./virgil-auth-client');
 
 // create OAuth 2.0 server
 var server = oauth2orize.createServer();
 
-// Register serialialization and deserialization functions.
+// Register serialization and deserialization functions.
 //
 // When a client redirects a user to user authorization endpoint, an
 // authorization transaction is initiated.  To complete the transaction, the
@@ -26,8 +27,8 @@ server.serializeClient(function(client, done) {
 
 server.deserializeClient(function(id, done) {
   db.clients.find(id, function(err, client) {
-    if (err) { return done(err); }
-    return done(null, client);
+	if (err) { return done(err); }
+	return done(null, client);
   });
 });
 
@@ -46,28 +47,14 @@ server.deserializeClient(function(id, done) {
 // values, and will be exchanged for an access token.
 
 server.grant(oauth2orize.grant.code(function(client, redirectURI, user, ares, done) {
-  var code = utils.uid(16)
+  var code = ares.code;
   
-  db.authorizationCodes.save(code, client.id, redirectURI, user.id, function(err) {
-    if (err) { return done(err); }
-    done(null, code);
+  db.authorizationCodes.save(code, client.id, redirectURI, null, function(err) {
+	if (err) { return done(err); }
+	done(null, code);
   });
 }));
 
-// Grant implicit authorization.  The callback takes the `client` requesting
-// authorization, the authenticated `user` granting access, and
-// their response, which contains approved scope, duration, etc. as parsed by
-// the application.  The application issues a token, which is bound to these
-// values.
-
-server.grant(oauth2orize.grant.token(function(client, user, ares, done) {
-    var token = utils.uid(256);
-
-    db.accessTokens.save(token, user.id, client.clientId, function(err) {
-        if (err) { return done(err); }
-        done(null, token);
-    });
-}));
 
 // Exchange authorization codes for access tokens.  The callback accepts the
 // `client`, which is exchanging `code` and any `redirectURI` from the
@@ -77,76 +64,25 @@ server.grant(oauth2orize.grant.token(function(client, user, ares, done) {
 
 server.exchange(oauth2orize.exchange.code(function(client, code, redirectURI, done) {
   db.authorizationCodes.find(code, function(err, authCode) {
-    if (err) { return done(err); }
-    if (client.id !== authCode.clientID) { return done(null, false); }
-    if (redirectURI !== authCode.redirectURI) { return done(null, false); }
-    
-    var token = utils.uid(256)
-    db.accessTokens.save(token, authCode.userID, authCode.clientID, function(err) {
-      if (err) { return done(err); }
-      done(null, token);
-    });
+	if (err) { return done(err); }
+	  console.log('NO ERROR');
+	if (client.id !== authCode.clientID) { return done(null, false); }
+	  console.log('CLIENT ID MATCH');
+	  console.log(`MY: ${redirectURI}\n THEIR: ${authCode.redirectURI}`);
+	if (redirectURI !== authCode.redirectURI) { return done(null, false); }
+
+	virgilAuth.obtainToken({
+		grant_type: 'access_code',
+		code: code
+	}, done);
   });
 }));
 
-// Exchange user id and password for access tokens.  The callback accepts the
-// `client`, which is exchanging the user's name and password from the
-// authorization request for verification. If these values are validated, the
-// application issues an access token on behalf of the user who authorized the code.
-
-server.exchange(oauth2orize.exchange.password(function(client, username, password, scope, done) {
-
-    //Validate the client
-    db.clients.findByClientId(client.clientId, function(err, localClient) {
-        if (err) { return done(err); }
-        if(localClient === null) {
-            return done(null, false);
-        }
-        if(localClient.clientSecret !== client.clientSecret) {
-            return done(null, false);
-        }
-        //Validate the user
-        db.users.findByUsername(username, function(err, user) {
-            if (err) { return done(err); }
-            if(user === null) {
-                return done(null, false);
-            }
-            if(password !== user.password) {
-                return done(null, false);
-            }
-            //Everything validated, return the token
-            var token = utils.uid(256);
-            db.accessTokens.save(token, user.id, client.clientId, function(err) {
-                if (err) { return done(err); }
-                done(null, token);
-            });
-        });
-    });
-}));
-
-// Exchange the client id and password/secret for an access token.  The callback accepts the
-// `client`, which is exchanging the client's id and password/secret from the
-// authorization request for verification. If these values are validated, the
-// application issues an access token on behalf of the client who authorized the code.
-
-server.exchange(oauth2orize.exchange.clientCredentials(function(client, scope, done) {
-
-    //Validate the client
-    db.clients.findByClientId(client.clientId, function(err, localClient) {
-        if (err) { return done(err); }
-        if(localClient === null) {
-            return done(null, false);
-        }
-        if(localClient.clientSecret !== client.clientSecret) {
-            return done(null, false);
-        }
-        var token = utils.uid(256);
-        //Pass in a null for user id since there is no user with this grant type
-        db.accessTokens.save(token, null, client.clientId, function(err) {
-            if (err) { return done(err); }
-            done(null, token);
-        });
-    });
+server.exchange(oauth2orize.exchange.refreshToken(function (client, refreshToken, done) {
+	virgilAuth.obtainToken({
+		grant_type: 'refresh_token',
+		refresh_token: refreshToken
+	}, done);
 }));
 
 // user authorization endpoint
@@ -154,7 +90,7 @@ server.exchange(oauth2orize.exchange.clientCredentials(function(client, scope, d
 // `authorization` middleware accepts a `validate` callback which is
 // responsible for validating the client making the authorization request.  In
 // doing so, is recommended that the `redirectURI` be checked against a
-// registered value, although security requirements may vary accross
+// registered value, although security requirements may vary across
 // implementations.  Once validated, the `done` callback must be invoked with
 // a `client` instance, as well as the `redirectURI` to which the user will be
 // redirected after an authorization decision is obtained.
@@ -166,25 +102,24 @@ server.exchange(oauth2orize.exchange.clientCredentials(function(client, scope, d
 // first, and rendering the `dialog` view. 
 
 exports.authorization = [
-  login.ensureLoggedIn(),
   server.authorization(function(clientID, redirectURI, done) {
-    db.clients.findByClientId(clientID, function(err, client) {
-      if (err) { return done(err); }
-      // WARNING: For security purposes, it is highly advisable to check that
-      //          redirectURI provided by the client matches one registered with
-      //          the server.  For simplicity, this example does not.  You have
-      //          been warned.
-      return done(null, client, redirectURI);
-    });
+	db.clients.findByClientId(clientID, function(err, client) {
+	  if (err) { return done(err); }
+	  // WARNING: For security purposes, it is highly advisable to check that
+	  //          redirectURI provided by the client matches one registered with
+	  //          the server.  For simplicity, this example does not.
+	  return done(null, client, redirectURI);
+	});
   },
   function (client, user, done) {
-    // TODO Check if grant request qualifies for immediate approval
-
-    // Ask user
-    done(null, false);
+	// Ask user
+	done(null, false);
   }),
   function(req, res){
-    res.render('dialog', { transactionID: req.oauth2.transactionID, user: req.user, client: req.oauth2.client });
+	res.render('dialog', {
+		transactionID: req.oauth2.transactionID,
+		client: req.oauth2.client
+	});
   }
 ];
 
@@ -192,12 +127,12 @@ exports.authorization = [
 //
 // `decision` middleware processes a user's decision to allow or deny access
 // requested by a client application.  Based on the grant type requested by the
-// client, the above grant middleware configured above will be invoked to send
-// a response.
+// client, the above grant middleware will be invoked to send a response.
 
 exports.decision = [
-  login.ensureLoggedIn(),
-  server.decision()
+  	server.decision(function (req, done) {
+		return done(null, { code: req.body.code });
+	})
 ];
 
 
