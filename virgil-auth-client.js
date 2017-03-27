@@ -8,7 +8,11 @@ exports.obtainToken = function (grant, done) {
         body: grant,
         json: true
     }, function(err, res, body) {
-       done(err, body);
+        if (err) {
+            return done(err);
+        }
+
+        done(null, body.token);
     });
 };
 
@@ -18,6 +22,10 @@ exports.refreshToken = function (grant, done) {
         body: grant,
         json: true
     }, function(err, res, body) {
-        done(err, body);
+        if (err) {
+            return done(err);
+        }
+
+        done(null, body.token);
     });
 };
