@@ -1,6 +1,10 @@
 var clients = [
-    { id: '1', name: 'Samplr', clientId: 'abc123', clientSecret: 'ssh-secret' },
-    { id: '2', name: 'Samplr2', clientId: 'xyz123', clientSecret: 'ssh-password' }
+    {
+      id: '1',
+      name: 'Helia Alexa Skill',
+      clientId: 'dceb6e87c7fc3931',
+      clientSecret: 'n65ShSPMe/2lNLxCq8PW2lfg7C93CqhCYYh4iI8sA/M='
+    }
 ];
 
 
