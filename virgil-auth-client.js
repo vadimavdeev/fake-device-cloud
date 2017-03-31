@@ -26,6 +26,6 @@ exports.refreshToken = function (grant, done) {
             return done(err);
         }
 
-        done(null, body.access_token);
+        done(null, body);
     });
 };
