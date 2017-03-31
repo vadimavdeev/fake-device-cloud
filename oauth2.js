@@ -76,14 +76,10 @@ server.exchange(oauth2orize.exchange.code(function(client, code, redirectURI, do
 }));
 
 server.exchange(oauth2orize.exchange.refreshToken(function (client, refreshToken, done) {
-	console.log('Refresh token request: ', client, refreshToken && refreshToken.length);
-	virgilAuth.obtainToken({
+	virgilAuth.refreshToken({
 		grant_type: 'refresh_token',
 		refresh_token: refreshToken
-	}, function (err, accessToken) {
-		console.log('Refresh token response: ', err, typeof accessToken);
-		done(err, accessToken);
-	});
+	}, done);
 }));
 
 // user authorization endpoint

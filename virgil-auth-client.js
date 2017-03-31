@@ -26,6 +26,10 @@ exports.refreshToken = function (grant, done) {
             return done(err);
         }
 
+        if (!Object.prototype.hasOwnProperty.call(body, 'token_type')) {
+            body.token_type = 'bearer';
+        }
+
         done(null, body);
     });
 };
