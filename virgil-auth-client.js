@@ -13,7 +13,7 @@ exports.obtainToken = function (grant, done) {
             return done(err);
         }
 
-        console.log('Response properties: ', Object.keys(body));
+        console.log('Response: ', JSON.stringify(body));
         done(null, body);
     });
 };
