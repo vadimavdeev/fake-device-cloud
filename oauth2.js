@@ -68,6 +68,7 @@ server.exchange(oauth2orize.exchange.code(function(client, code, redirectURI, do
 	if (client.id !== authCode.clientID) { return done(null, false); }
 	if (redirectURI !== authCode.redirectURI) { return done(null, false); }
 
+	console.log('Exchanging access code', typeof code);
 	virgilAuth.obtainToken({
 		grant_type: 'access_code',
 		code: code
