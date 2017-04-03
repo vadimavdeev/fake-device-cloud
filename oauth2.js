@@ -76,6 +76,7 @@ server.exchange(oauth2orize.exchange.code(function(client, code, redirectURI, do
 }));
 
 server.exchange(oauth2orize.exchange.refreshToken(function (client, refreshToken, done) {
+	console.log('Exchanging refresh token', typeof refreshToken);
 	virgilAuth.refreshToken({
 		grant_type: 'refresh_token',
 		refresh_token: refreshToken
@@ -142,6 +143,10 @@ exports.decision = [
 
 exports.token = [
   passport.authenticate(['basic', 'oauth2-client-password'], { session: false }),
+  function (req, res, next) {
+	  console.log('Token endpoint hit with grant_type: ' + req.body.grant_type);
+	  next();
+  },
   server.token(),
   server.errorHandler()
 ];
