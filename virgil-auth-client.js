@@ -9,11 +9,9 @@ exports.obtainToken = function (grant, done) {
         json: true
     }, function(err, res, body) {
         if (err) {
-            console.log(err);
             return done(err);
         }
 
-        console.log('Response: ', JSON.stringify(body));
         done(null, body);
     });
 };
@@ -26,10 +24,6 @@ exports.refreshToken = function (grant, done) {
     }, function(err, res, body) {
         if (err) {
             return done(err);
-        }
-
-        if (!Object.prototype.hasOwnProperty.call(body, 'token_type')) {
-            body.token_type = 'bearer';
         }
 
         done(null, body);

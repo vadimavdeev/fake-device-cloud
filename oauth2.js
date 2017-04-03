@@ -68,20 +68,30 @@ server.exchange(oauth2orize.exchange.code(function(client, code, redirectURI, do
 	if (client.id !== authCode.clientID) { return done(null, false); }
 	if (redirectURI !== authCode.redirectURI) { return done(null, false); }
 
-	console.log('Exchanging access code', typeof code);
 	virgilAuth.obtainToken({
 		grant_type: 'access_code',
 		code: code
-	}, done);
+	}, function (err, data) {
+		if (err) {
+			done(err);
+		} else {
+			done(null, data.access_token, data.refresh_token, data);
+		}
+	});
   });
 }));
 
 server.exchange(oauth2orize.exchange.refreshToken(function (client, refreshToken, done) {
-	console.log('Exchanging refresh token', typeof refreshToken);
 	virgilAuth.refreshToken({
 		grant_type: 'refresh_token',
 		refresh_token: refreshToken
-	}, done);
+	}, function (err, data) {
+		if (err) {
+			done(err);
+		} else {
+			done(null, data.access_token, data.refresh_token, data);
+		}
+	});
 }));
 
 // user authorization endpoint
