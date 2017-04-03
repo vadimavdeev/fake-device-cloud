@@ -9,9 +9,11 @@ exports.obtainToken = function (grant, done) {
         json: true
     }, function(err, res, body) {
         if (err) {
+            console.log(err);
             return done(err);
         }
 
+        console.log('Response properties: ', Object.keys(body));
         done(null, body);
     });
 };
