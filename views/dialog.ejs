@@ -2,10 +2,12 @@
   <h1 class="headline">Alexa Account Linking</h1>
   <p class="tagline">
     <b><%= client.name %></b> is requesting access to your account.
-    To link your Helia account with <%= client.name %> please
-    <a href="helia://account-linking" target="_blank">open the Helia app</a>
-    on your device. It will generate a code for you which you'll need to paste
-    in the field below
+    To link your Helia account with <%= client.name %> please open the Helia app
+    by following
+    <a href="helia://account-linking"><b>this link</b></a>.
+    The Helia app will generate a code for you which you'll need to paste
+    in the field below. If the Helia app doesn't open automatically, copy the link
+    and paste it in a web browser.
   </p>
   <form id="grant-code-form" action="/dialog/authorize/decision" method="post">
     <input name="transaction_id" type="hidden" value="<%= transactionID %>">
