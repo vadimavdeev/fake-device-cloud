@@ -15,6 +15,7 @@ deploying. In a real implementation the client information and authorization cod
 
 ## Development
 Works with Node.js >=4.
+Requires environment variable `VIRGIL_AUTH_URL` to be set to the url of the dedicated Virgil Auth Service instance.
 
 To start the server, run:
 ```sh
